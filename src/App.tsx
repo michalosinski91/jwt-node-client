@@ -1,9 +1,10 @@
 import React, { useState, useEffect} from 'react';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { Register } from './pages/Register'
 import { Login } from './pages/Login'
 import { Bye } from './pages/Bye'
+import { Header } from './Header'
 import { setAccessToken } from './accessToken';
 
 const App: React.FC = () => {
@@ -26,20 +27,7 @@ const App: React.FC = () => {
   return(
     <Router>
       <div>
-        <header>
-            <div>
-                <Link to='/'>Home</Link>
-            </div>
-            <div>
-                <Link to='/register'>Register</Link>
-            </div>
-            <div>
-                <Link to='/login'>Login</Link>
-            </div>
-            <div>
-                <Link to='/bye'>Bye</Link>
-            </div>
-        </header>
+        <Header />
         <Switch>
           <Route exact path='/' component={Home} /> 
           <Route exact path='/register' component={Register} /> 
