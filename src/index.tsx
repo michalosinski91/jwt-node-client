@@ -6,8 +6,10 @@ import { HttpLink } from 'apollo-link-http';
 import { onError } from 'apollo-link-error';
 import { ApolloLink, Observable } from 'apollo-link';
 import App from './App'
-import { getAccessToken } from './accessToken';
+import { getAccessToken, setAccessToken } from './accessToken';
 import { ApolloProvider } from '@apollo/react-hooks';
+import { TokenRefreshLink } from 'apollo-link-token-refresh'
+import jwtDecode from 'jwt-decode'
 
 const cache = new InMemoryCache({});
 
@@ -42,6 +44,39 @@ const requestLink = new ApolloLink((operation, forward) =>
 
 const client = new ApolloClient({
   link: ApolloLink.from([
+    new TokenRefreshLink({
+        accessTokenField: 'accessToken',
+        isTokenValidOrUndefined: () => {
+            const token = getAccessToken()
+            if (!token) {
+                return true
+            }
+
+            try {
+                const {exp} = jwtDecode(token)
+                if (Date.now() >= exp * 1000) {
+                    return false
+                } else {
+                    return true
+                }
+            } catch (error) {
+                return false
+            }
+        },
+        fetchAccessToken: () => {
+            return fetch('http://localhost:4000/refresh_token', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        },
+        handleFetch: accessToken => {
+            setAccessToken(accessToken)
+        },
+        handleError: err => {
+            console.warn('Your refresh token is invalid. Try to relogin');
+            console.log(err)
+        }
+    }),
     onError(({ graphQLErrors, networkError }) => {
       if (graphQLErrors) {
         console.log(graphQLErrors)
